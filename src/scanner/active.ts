@@ -10,7 +10,7 @@ import {
   type ScanReport,
   scanRequestSchema,
 } from "../domain/schemas.js";
-import { scoreFindings, uniqueRemediation, verdictForScore } from "../report/scoring.js";
+import { enrichReport } from "../report/reportEngine.js";
 import { parsePaymentRequired, parsePaymentResponse } from "../x402/headers.js";
 import { getChallengeRequirements } from "../domain/schemas.js";
 import { evidenceId, makeScannerEvidence } from "./evidence.js";
@@ -40,17 +40,11 @@ function finding(
 }
 
 function withAdditions(report: ScanReport, evidence: Evidence[], findings: Finding[]): ScanReport {
-  const nextFindings = [...report.findings, ...findings];
-  const score = scoreFindings(nextFindings);
-  return {
+  return enrichReport({
     ...report,
     evidence: [...report.evidence, ...evidence],
-    findings: nextFindings,
-    score,
-    verdict: verdictForScore(score),
-    remediation: uniqueRemediation(nextFindings),
-    okxReadiness: report.okxReadiness,
-  };
+    findings: [...report.findings, ...findings],
+  });
 }
 
 function unpaidChallengeHeaders(report: ScanReport): Record<string, string> | undefined {

@@ -7,6 +7,7 @@ import {
   type ScanRequest,
   scanRequestSchema,
 } from "../domain/schemas.js";
+import { enrichReport } from "../report/reportEngine.js";
 import { scoreFindings, uniqueRemediation, verdictForScore } from "../report/scoring.js";
 import { assertPublicHttpsUrl } from "../security/ssrf.js";
 import { parsePaymentRequired } from "../x402/headers.js";
@@ -109,7 +110,7 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
       ),
     );
     const score = scoreFindings(findings);
-    return {
+    return enrichReport({
       runId,
       targetUrl: request.targetUrl,
       method: request.method,
@@ -121,7 +122,7 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
       okxReadiness: { pass: false, missing: okxMissing(findings, 0) },
       remediation: uniqueRemediation(findings),
       createdAt: isoNow(),
-    };
+    });
   }
 
   evidence.push(
@@ -150,7 +151,7 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
       ),
     );
     const score = scoreFindings(findings);
-    return {
+    return enrichReport({
       runId,
       targetUrl: request.targetUrl,
       method: request.method,
@@ -162,7 +163,7 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
       okxReadiness: { pass: false, missing: okxMissing(findings, 0) },
       remediation: uniqueRemediation(findings),
       createdAt: isoNow(),
-    };
+    });
   }
 
   if (unpaidProbe.status !== 402) {
@@ -303,7 +304,7 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
 
   const score = scoreFindings(findings);
   const missing = okxMissing(findings, unpaidProbe.status);
-  return {
+  return enrichReport({
     runId,
     targetUrl: request.targetUrl,
     method: request.method,
@@ -315,5 +316,5 @@ export async function runPassiveScan(input: unknown, config: AppConfig): Promise
     okxReadiness: { pass: missing.length === 0, missing },
     remediation: uniqueRemediation(findings),
     createdAt: isoNow(),
-  };
+  });
 }
