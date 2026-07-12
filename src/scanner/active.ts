@@ -17,6 +17,8 @@ import { evidenceId, makeScannerEvidence } from "./evidence.js";
 import { evaluateActiveGates, evaluateSpendPolicy } from "./activePolicy.js";
 import { probeTarget } from "./httpClient.js";
 import { runPassiveScan } from "./passive.js";
+import { runPaidRedTeamChecks } from "./redteam.js";
+import { checkSettlementReceipt } from "./settlement.js";
 
 function finding(
   category: Finding["category"],
@@ -188,6 +190,9 @@ export async function runActiveScan(input: unknown, config: AppConfig): Promise<
           settlement: settlement.value,
         }),
       );
+      const settlementCheck = await checkSettlementReceipt(settlement.value, config);
+      additions.push(...settlementCheck.evidence);
+      activeFindings.push(...settlementCheck.findings);
     } else {
       activeFindings.push(
         finding(
@@ -201,6 +206,12 @@ export async function runActiveScan(input: unknown, config: AppConfig): Promise<
           ],
         ),
       );
+    }
+
+    if (paidProbe.status >= 200 && paidProbe.status < 300) {
+      const redTeam = await runPaidRedTeamChecks(request, config, paymentHeaders);
+      additions.push(...redTeam.evidence);
+      activeFindings.push(...redTeam.findings);
     }
 
     if (paidProbe.status === 402) {
