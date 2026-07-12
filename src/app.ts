@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 
 import { getConfig } from "./config.js";
 import { logger } from "./logger.js";
+import { runActiveScan } from "./scanner/active.js";
 import { runPassiveScan } from "./scanner/passive.js";
 import { getReportStore } from "./store/reportStore.js";
 
@@ -105,16 +106,10 @@ export function createApp(): Express {
 
   app.post("/api/v1/scan", async (req, res, next) => {
     try {
-      if (req.body?.mode === "active") {
-        res.status(501).json({
-          error: "active_scanning_not_enabled_yet",
-          message:
-            "Active payment probes are added in the next stage and require real wallet configuration.",
-        });
-        return;
-      }
-
-      const report = await runPassiveScan(req.body, config);
+      const report =
+        req.body?.mode === "active"
+          ? await runActiveScan(req.body, config)
+          : await runPassiveScan(req.body, config);
       const reportWithToken = { ...report, reportToken: nanoid(32) };
       getReportStore(config.dbPath).save(reportWithToken);
       res.json(reportWithToken);
