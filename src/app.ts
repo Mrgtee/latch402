@@ -1,10 +1,14 @@
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
+import { nanoid } from "nanoid";
 import { pinoHttp } from "pino-http";
+import { ZodError } from "zod";
 
 import { getConfig } from "./config.js";
 import { logger } from "./logger.js";
+import { runPassiveScan } from "./scanner/passive.js";
+import { getReportStore } from "./store/reportStore.js";
 
 export function createApp(): Express {
   const config = getConfig();
@@ -33,11 +37,126 @@ export function createApp(): Express {
       },
       paths: {
         "/health": { get: { responses: { "200": { description: "Healthy" } } } },
-        "/api/v1/scan": { post: { responses: { "200": { description: "Scan report" } } } },
+        "/openapi.json": { get: { responses: { "200": { description: "OpenAPI schema" } } } },
+        "/api/v1/scan": {
+          post: {
+            summary: "Run a paid x402 security scan",
+            requestBody: {
+              required: true,
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ScanRequest" },
+                },
+              },
+            },
+            responses: {
+              "200": { description: "Scan report" },
+              "402": { description: "Payment required in production" },
+            },
+          },
+        },
+        "/api/v1/reports/{runId}": {
+          get: {
+            summary: "Fetch a stored report with its report token",
+            parameters: [
+              { name: "runId", in: "path", required: true, schema: { type: "string" } },
+              { name: "token", in: "query", required: true, schema: { type: "string" } },
+            ],
+            responses: {
+              "200": { description: "Stored scan report" },
+              "401": { description: "Missing token" },
+              "404": { description: "Report not found" },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          ScanRequest: {
+            type: "object",
+            required: ["targetUrl", "mode", "authorizationConfirmed"],
+            properties: {
+              targetUrl: { type: "string", format: "uri" },
+              method: { type: "string", enum: ["GET", "POST"], default: "GET" },
+              headers: { type: "object", additionalProperties: { type: "string" } },
+              body: {},
+              mode: { type: "string", enum: ["passive", "active"] },
+              expectedNetwork: { type: "string", enum: ["eip155:196", "eip155:1952"] },
+              expectedAssets: { type: "array", items: { type: "string" } },
+              authorizationConfirmed: { type: "boolean", const: true },
+            },
+          },
+          ScanReport: {
+            type: "object",
+            required: ["runId", "targetUrl", "score", "verdict", "findings", "evidence"],
+            properties: {
+              runId: { type: "string" },
+              targetUrl: { type: "string" },
+              score: { type: "integer", minimum: 0, maximum: 100 },
+              verdict: { type: "string", enum: ["pass", "warn", "fail"] },
+              findings: { type: "array" },
+              evidence: { type: "array" },
+            },
+          },
+        },
       },
     });
   });
 
+  app.post("/api/v1/scan", async (req, res, next) => {
+    try {
+      if (req.body?.mode === "active") {
+        res.status(501).json({
+          error: "active_scanning_not_enabled_yet",
+          message:
+            "Active payment probes are added in the next stage and require real wallet configuration.",
+        });
+        return;
+      }
+
+      const report = await runPassiveScan(req.body, config);
+      const reportWithToken = { ...report, reportToken: nanoid(32) };
+      getReportStore(config.dbPath).save(reportWithToken);
+      res.json(reportWithToken);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/v1/reports/:runId", (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : undefined;
+    if (!token) {
+      res.status(401).json({ error: "missing_report_token" });
+      return;
+    }
+
+    const report = getReportStore(config.dbPath).get(req.params.runId, token);
+    if (!report) {
+      res.status(404).json({ error: "report_not_found" });
+      return;
+    }
+
+    res.json(report);
+  });
+
+  app.use(
+    (error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      void _next;
+      if (error instanceof ZodError) {
+        res.status(400).json({
+          error: "invalid_scan_request",
+          issues: error.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
+          })),
+        });
+        return;
+      }
+
+      logger.error({ err: error }, "request failed");
+      res.status(500).json({ error: "internal_error" });
+    },
+  );
+
   return app;
 }
-
