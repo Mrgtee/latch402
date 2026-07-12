@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 
 import { getConfig } from "./config.js";
 import { logger } from "./logger.js";
+import { createOkxPaymentGate } from "./payment/okx.js";
 import { runActiveScan } from "./scanner/active.js";
 import { runPassiveScan } from "./scanner/passive.js";
 import { getReportStore } from "./store/reportStore.js";
@@ -103,6 +104,11 @@ export function createApp(): Express {
       },
     });
   });
+
+  const okxPaymentGate = createOkxPaymentGate(config);
+  if (okxPaymentGate) {
+    app.use(okxPaymentGate);
+  }
 
   app.post("/api/v1/scan", async (req, res, next) => {
     try {
