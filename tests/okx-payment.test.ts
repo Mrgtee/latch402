@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { type AppConfig } from "../src/config.js";
 import { OKX_X_LAYER_MAINNET, OKX_X_LAYER_TESTNET } from "../src/domain/constants.js";
-import { validateOkxPaymentConfig } from "../src/payment/okx.js";
+import { buildOkxFacilitatorOptions, validateOkxPaymentConfig } from "../src/payment/okx.js";
 
 const baseConfig: AppConfig = {
   nodeEnv: "production",
@@ -36,6 +36,21 @@ const baseConfig: AppConfig = {
 describe("OKX payment config", () => {
   it("accepts complete production payment config", () => {
     expect(validateOkxPaymentConfig(baseConfig)).toEqual({ ok: true, price: "$0.05" });
+  });
+
+  it("omits facilitator baseUrl when no override is configured", () => {
+    const options = buildOkxFacilitatorOptions(baseConfig);
+
+    expect(Object.hasOwn(options, "baseUrl")).toBe(false);
+  });
+
+  it("includes facilitator baseUrl only when explicitly configured", () => {
+    const options = buildOkxFacilitatorOptions({
+      ...baseConfig,
+      okxFacilitatorBaseUrl: "https://web3.okx.com",
+    });
+
+    expect(options.baseUrl).toBe("https://web3.okx.com");
   });
 
   it("fails fast when required OKX payment config is missing", () => {

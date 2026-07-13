@@ -10,6 +10,14 @@ const evmAddressPattern = /^0x[a-fA-F0-9]{40}$/;
 
 export type OkxPaymentConfigCheck = { ok: true; price: string } | { ok: false; missing: string[] };
 
+type OkxFacilitatorOptions = {
+  apiKey: string;
+  secretKey: string;
+  passphrase: string;
+  baseUrl?: string;
+  syncSettle: boolean;
+};
+
 function normalizePriceUsd(value: string): string | undefined {
   const trimmed = value.trim().replace(/^\$/, "");
   if (!/^\d+(?:\.\d{1,6})?$/.test(trimmed)) return undefined;
@@ -29,6 +37,21 @@ export function validateOkxPaymentConfig(config: AppConfig): OkxPaymentConfigChe
   return missing.length === 0 && price ? { ok: true, price } : { ok: false, missing };
 }
 
+export function buildOkxFacilitatorOptions(config: AppConfig): OkxFacilitatorOptions {
+  const options: OkxFacilitatorOptions = {
+    apiKey: config.okxApiKey ?? "",
+    secretKey: config.okxSecretKey ?? "",
+    passphrase: config.okxPassphrase ?? "",
+    syncSettle: config.okxSyncSettle,
+  };
+
+  if (config.okxFacilitatorBaseUrl) {
+    options.baseUrl = config.okxFacilitatorBaseUrl;
+  }
+
+  return options;
+}
+
 export function createOkxPaymentGate(config: AppConfig): RequestHandler | undefined {
   if (!config.okxPaymentEnabled) return undefined;
 
@@ -41,13 +64,7 @@ export function createOkxPaymentGate(config: AppConfig): RequestHandler | undefi
 
   const payToAddress = config.payToAddress as string;
 
-  const facilitatorClient = new OKXFacilitatorClient({
-    apiKey: config.okxApiKey ?? "",
-    secretKey: config.okxSecretKey ?? "",
-    passphrase: config.okxPassphrase ?? "",
-    baseUrl: config.okxFacilitatorBaseUrl,
-    syncSettle: config.okxSyncSettle,
-  });
+  const facilitatorClient = new OKXFacilitatorClient(buildOkxFacilitatorOptions(config));
 
   const resourceServer = new x402ResourceServer(facilitatorClient).register(
     config.x402Network,
