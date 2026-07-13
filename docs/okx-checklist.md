@@ -49,5 +49,5 @@ Use this checklist before submitting latch402 to OKX.AI and the Build X final fo
 - [ ] `SCAN_ACTIVE_PAYMENTS_ENABLED=true`
 - [ ] `EVM_PRIVATE_KEY` belongs to a funded test wallet first.
 - [ ] `SCAN_SPEND_CAP_USD` is set.
-- [ ] `X_LAYER_RPC_URL` is set for receipt lookup.
+- [ ] `X_LAYER_RPC_URL` is set for receipt lookup: `https://rpc.xlayer.tech` for X Layer mainnet or `https://testrpc.xlayer.tech` for testnet.
 - [ ] Mainnet active scans are enabled only after a manual environment switch.

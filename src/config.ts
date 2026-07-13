@@ -6,31 +6,37 @@ import {
   OKX_X_LAYER_TESTNET,
 } from "./domain/constants.js";
 
+const emptyToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
+const optionalString = z.preprocess(emptyToUndefined, z.string().optional());
+const optionalUrl = z.preprocess(emptyToUndefined, z.string().url().optional());
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(4020),
   CORS_ORIGIN: z.string().default("*"),
   LATCH402_DB_PATH: z.string().default(".data/latch402.db"),
-  LATCH402_PUBLIC_BASE_URL: z.string().url().optional(),
+  LATCH402_PUBLIC_BASE_URL: optionalUrl,
   LATCH402_PAYMENT_MODE: z.enum(["auto", "okx", "off"]).default("auto"),
-  TARGET_ALLOWLIST: z.string().optional(),
+  TARGET_ALLOWLIST: optionalString,
   SCAN_TIMEOUT_MS: z.coerce.number().int().positive().default(12000),
   SCAN_MAX_BODY_BYTES: z.coerce.number().int().positive().default(65536),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
   SCAN_ACTIVE_PAYMENTS_ENABLED: z.enum(["true", "false"]).default("false"),
   SCAN_SPEND_CAP_USD: z.coerce.number().nonnegative().default(0),
-  EVM_PRIVATE_KEY: z.string().optional(),
+  EVM_PRIVATE_KEY: optionalString,
   X402_ACTIVE_NETWORK: z.enum(OKX_SUPPORTED_NETWORKS).default(OKX_X_LAYER_TESTNET),
   X402_NETWORK: z.enum(OKX_SUPPORTED_NETWORKS).default(OKX_X_LAYER_MAINNET),
   X402_PRICE_USD: z.string().default("0.05"),
-  PAY_TO_ADDRESS: z.string().optional(),
-  OKX_API_KEY: z.string().optional(),
-  OKX_SECRET_KEY: z.string().optional(),
-  OKX_PASSPHRASE: z.string().optional(),
-  OKX_FACILITATOR_BASE_URL: z.string().url().optional(),
+  PAY_TO_ADDRESS: optionalString,
+  OKX_API_KEY: optionalString,
+  OKX_SECRET_KEY: optionalString,
+  OKX_PASSPHRASE: optionalString,
+  OKX_FACILITATOR_BASE_URL: optionalUrl,
   OKX_SYNC_SETTLE: z.enum(["true", "false"]).default("false"),
-  X_LAYER_RPC_URL: z.string().url().optional(),
+  X_LAYER_RPC_URL: optionalUrl,
   npm_package_version: z.string().default("0.1.0"),
 });
 

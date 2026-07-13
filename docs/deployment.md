@@ -78,4 +78,4 @@ Active scans create real payment payloads only when all gates pass:
 - The target challenge matches `X402_ACTIVE_NETWORK`
 - The estimated price is at or below `SCAN_SPEND_CAP_USD`
 
-Start with `X402_ACTIVE_NETWORK=eip155:1952`. Move to `eip155:196` only after manual review.
+Start with `X402_ACTIVE_NETWORK=eip155:1952` and `X_LAYER_RPC_URL=https://testrpc.xlayer.tech`. Move to `X402_ACTIVE_NETWORK=eip155:196` and `X_LAYER_RPC_URL=https://rpc.xlayer.tech` only after manual review.
