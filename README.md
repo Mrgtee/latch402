@@ -9,6 +9,7 @@ and remediation guidance.
 Production ASP:
 
 - Base URL: `https://latch402-production.up.railway.app`
+- Web UI: `GET /`
 - Paid endpoint: `POST /api/v1/scan`
 - OpenAPI: `GET /openapi.json`
 - Price: `$0.05` per scan
@@ -46,6 +47,16 @@ Expected production behavior:
 - `accepts[0].network: eip155:196`
 - `accepts[0].amount: 50000`
 - `accepts[0].asset: 0x779ded0c9e1022225f8e0630b35a9b54be713736`
+
+## Web UI
+
+Open the live console:
+
+```bash
+https://latch402-production.up.railway.app/
+```
+
+The UI checks service health, builds scan requests, runs the real unpaid `402` preflight, decodes `payment-required`, and fetches stored reports by `runId` and `reportToken`.
 
 ## API
 

@@ -17,5 +17,6 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/dist ./dist
+COPY public ./public
 EXPOSE 4020
 CMD ["node", "dist/src/server.js"]

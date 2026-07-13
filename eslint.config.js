@@ -8,6 +8,19 @@ export default tseslint.config(
     ignores: ["dist", "coverage", "node_modules"],
   },
   {
+    files: ["public/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: {
+        document: "readonly",
+        fetch: "readonly",
+        navigator: "readonly",
+        TextDecoder: "readonly",
+        window: "readonly",
+      },
+    },
+  },
+  {
     files: ["src/**/*.ts", "tests/**/*.ts"],
     languageOptions: {
       parserOptions: {
@@ -21,4 +34,3 @@ export default tseslint.config(
     },
   },
 );
-

@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
@@ -31,6 +33,7 @@ export function createApp(): Express {
   app.use(cors({ origin: config.corsOrigin }));
   app.use(express.json({ limit: "256kb" }));
   app.use(pinoHttp({ logger }));
+  app.use(express.static(path.join(process.cwd(), "public"), { index: "index.html" }));
 
   app.get("/health", (_req, res) => {
     res.json({
@@ -119,6 +122,15 @@ export function createApp(): Express {
     "/api/v1/scan",
     createRateLimiter({ windowMs: config.rateLimitWindowMs, max: config.rateLimitMax }),
   );
+
+  app.get("/api/v1/scan", (_req, res) => {
+    res.set("Allow", "POST").status(405).json({
+      error: "method_not_allowed",
+      message: "Use POST /api/v1/scan to run a latch402 scan.",
+      ui: "/",
+      openapi: "/openapi.json",
+    });
+  });
 
   const okxPaymentGate = createOkxPaymentGate(config);
   if (okxPaymentGate) {

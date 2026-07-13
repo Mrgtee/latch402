@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="latch402 paid x402 red-team scanner for OKX.AI A2MCP services"
+    />
+    <title>latch402 | x402 Red-Team Scanner</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="latch402 home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M8 14.5V10a8 8 0 0 1 16 0v4.5" />
+              <path d="M6.5 14.5h19v12h-19z" />
+              <path d="M16 18.5v4" />
+            </svg>
+          </span>
+          <span>
+            <strong>latch402</strong>
+            <small>x402 red-team scanner</small>
+          </span>
+        </a>
+        <nav class="nav-actions" aria-label="Primary links">
+          <a href="/openapi.json">OpenAPI</a>
+          <a href="https://github.com/Mrgtee/latch402" rel="noreferrer">GitHub</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="status-strip" aria-label="Service summary">
+          <div>
+            <span class="label">Paid endpoint</span>
+            <strong>POST /api/v1/scan</strong>
+          </div>
+          <div>
+            <span class="label">Price</span>
+            <strong>$0.05</strong>
+          </div>
+          <div>
+            <span class="label">Network</span>
+            <strong>eip155:196</strong>
+          </div>
+          <div>
+            <span class="label">Token</span>
+            <strong>USDt0</strong>
+          </div>
+          <div class="service-state" id="service-state">
+            <span class="state-dot" aria-hidden="true"></span>
+            <span>Checking service</span>
+          </div>
+        </section>
+
+        <section class="workspace" aria-label="Scan console">
+          <form class="panel scan-panel" id="scan-form">
+            <div class="panel-heading">
+              <div>
+                <h1>x402 endpoint preflight</h1>
+                <p>Build a real latch402 request and inspect the returned payment challenge.</p>
+              </div>
+              <button
+                class="icon-button"
+                type="button"
+                id="load-example"
+                title="Load example request"
+                aria-label="Load example request"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
+
+            <label class="field">
+              <span>Target URL</span>
+              <input
+                id="target-url"
+                name="targetUrl"
+                type="url"
+                placeholder="https://example.com/api/paid"
+                required
+              />
+            </label>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>Method</span>
+                <select id="method" name="method">
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Mode</span>
+                <select id="mode" name="mode">
+                  <option value="passive">passive</option>
+                  <option value="active">active</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Expected network</span>
+                <select id="expected-network" name="expectedNetwork">
+                  <option value="eip155:196">eip155:196</option>
+                  <option value="eip155:1952">eip155:1952</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>POST body</span>
+              <textarea
+                id="body"
+                name="body"
+                rows="7"
+                spellcheck="false"
+                placeholder='{"demo":true}'
+              ></textarea>
+            </label>
+
+            <div class="action-row">
+              <button class="primary-button" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                Run unpaid preflight
+              </button>
+              <button class="secondary-button" type="button" id="copy-curl">Copy curl</button>
+            </div>
+            <p class="form-note" id="form-note">
+              Passive mode never spends funds. Production returns 402 until a valid x402 payment
+              replay is sent.
+            </p>
+          </form>
+
+          <section class="panel result-panel" aria-label="Payment challenge result">
+            <div class="panel-heading compact">
+              <div>
+                <h2>Payment challenge</h2>
+                <p id="challenge-status">No preflight run yet.</p>
+              </div>
+              <button class="secondary-button small" type="button" id="copy-challenge" disabled>
+                Copy JSON
+              </button>
+            </div>
+
+            <div class="challenge-grid" id="challenge-grid">
+              <div><span>x402</span><strong>-</strong></div>
+              <div><span>Resource</span><strong>-</strong></div>
+              <div><span>Network</span><strong>-</strong></div>
+              <div><span>Amount</span><strong>-</strong></div>
+              <div><span>Asset</span><strong>-</strong></div>
+              <div><span>Pay to</span><strong>-</strong></div>
+            </div>
+
+            <pre class="code-output" id="challenge-json">{}</pre>
+          </section>
+        </section>
+
+        <section class="lower-grid">
+          <section class="panel report-panel" aria-label="Report fetcher">
+            <div class="panel-heading compact">
+              <div>
+                <h2>Report lookup</h2>
+                <p>Fetch a completed scan by run id and report token.</p>
+              </div>
+            </div>
+            <form id="report-form" class="report-form">
+              <label class="field">
+                <span>Run ID</span>
+                <input id="run-id" autocomplete="off" placeholder="scan_..." />
+              </label>
+              <label class="field">
+                <span>Report token</span>
+                <input id="report-token" autocomplete="off" placeholder="token" />
+              </label>
+              <button class="secondary-button" type="submit">Fetch report</button>
+            </form>
+            <pre class="code-output report-output" id="report-output">{}</pre>
+          </section>
+
+          <section class="panel details-panel" aria-label="Readiness details">
+            <div class="panel-heading compact">
+              <div>
+                <h2>Review checklist</h2>
+                <p>Live proof points for OKX.AI review.</p>
+              </div>
+            </div>
+            <ul class="check-list" id="check-list">
+              <li><span></span> HTTPS public deployment</li>
+              <li><span></span> Health endpoint reachable</li>
+              <li><span></span> OpenAPI schema reachable</li>
+              <li><span></span> Unpaid scan returns 402</li>
+              <li><span></span> Challenge advertises X Layer mainnet</li>
+              <li><span></span> Challenge binds to HTTPS resource</li>
+            </ul>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
