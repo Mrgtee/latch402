@@ -7,5 +7,10 @@ describe("createApp", () => {
     const app = createApp();
     expect(app).toBeDefined();
   });
-});
 
+  it("trusts the first deployment proxy for canonical HTTPS resource URLs", () => {
+    const app = createApp();
+
+    expect(app.get("trust proxy")).toBe(1);
+  });
+});
