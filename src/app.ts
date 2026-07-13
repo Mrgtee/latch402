@@ -8,9 +8,18 @@ import { ZodError } from "zod";
 import { getConfig } from "./config.js";
 import { logger } from "./logger.js";
 import { createOkxPaymentGate } from "./payment/okx.js";
+import { createRateLimiter } from "./security/rateLimit.js";
 import { runActiveScan } from "./scanner/active.js";
 import { runPassiveScan } from "./scanner/passive.js";
 import { getReportStore } from "./store/reportStore.js";
+
+function hostForAudit(targetUrl: string): string {
+  try {
+    return new URL(targetUrl).hostname;
+  } catch {
+    return "invalid-url";
+  }
+}
 
 export function createApp(): Express {
   const config = getConfig();
@@ -105,6 +114,11 @@ export function createApp(): Express {
     });
   });
 
+  app.use(
+    "/api/v1/scan",
+    createRateLimiter({ windowMs: config.rateLimitWindowMs, max: config.rateLimitMax }),
+  );
+
   const okxPaymentGate = createOkxPaymentGate(config);
   if (okxPaymentGate) {
     app.use(okxPaymentGate);
@@ -118,6 +132,21 @@ export function createApp(): Express {
           : await runPassiveScan(req.body, config);
       const reportWithToken = { ...report, reportToken: nanoid(32) };
       getReportStore(config.dbPath).save(reportWithToken);
+      logger.info(
+        {
+          scan: {
+            runId: reportWithToken.runId,
+            mode: reportWithToken.mode,
+            method: reportWithToken.method,
+            targetHost: hostForAudit(reportWithToken.targetUrl),
+            verdict: reportWithToken.verdict,
+            score: reportWithToken.score,
+            findingCount: reportWithToken.findings.length,
+            okxPaymentEnabled: config.okxPaymentEnabled,
+          },
+        },
+        "scan completed",
+      );
       res.json(reportWithToken);
     } catch (error) {
       next(error);

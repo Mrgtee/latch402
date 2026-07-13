@@ -15,6 +15,8 @@ const baseConfig: AppConfig = {
   targetAllowlist: undefined,
   scanTimeoutMs: 12000,
   scanMaxBodyBytes: 65536,
+  rateLimitWindowMs: 60000,
+  rateLimitMax: 30,
   activePaymentsEnabled: false,
   scanSpendCapUsd: 0,
   evmPrivateKey: undefined,

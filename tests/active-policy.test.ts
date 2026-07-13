@@ -19,6 +19,8 @@ const baseConfig = {
   targetAllowlist: undefined,
   scanTimeoutMs: 100,
   scanMaxBodyBytes: 1024,
+  rateLimitWindowMs: 60000,
+  rateLimitMax: 30,
   activePaymentsEnabled: true,
   scanSpendCapUsd: 0.1,
   evmPrivateKey: "0x" + "1".repeat(64),
