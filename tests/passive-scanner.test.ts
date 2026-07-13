@@ -36,4 +36,10 @@ describe("PII detector", () => {
     expect(hits.some((hit) => hit.rule === "email-like value")).toBe(true);
     expect(hits.some((hit) => hit.rule === "phone-like value")).toBe(true);
   });
+
+  it("does not flag token display names as PII", () => {
+    const hits = findPii({ accepts: [{ extra: { name: "USDt0", version: "1" } }] });
+
+    expect(hits).toEqual([]);
+  });
 });

@@ -27,6 +27,24 @@ const challenge = {
   ],
 };
 
+const okxTopLevelResourceChallenge = {
+  x402Version: 2,
+  resource: {
+    url: "https://api.example.com/paid",
+    description: "paid endpoint",
+    mimeType: "application/json",
+  },
+  accepts: [
+    {
+      scheme: "exact",
+      network: OKX_X_LAYER_MAINNET,
+      asset: OKX_SUPPORTED_ASSETS.USDG,
+      amount: "50000",
+      payTo: "0x1111111111111111111111111111111111111111",
+    },
+  ],
+};
+
 describe("x402 header decoding", () => {
   it("decodes base64url JSON headers", () => {
     const encoded = encodeBase64UrlJson(challenge);
@@ -94,6 +112,15 @@ describe("x402 validators", () => {
       expect(hasResourceBinding(parsed.value, "https://api.example.com/paid?b=2&a=1", "GET")).toBe(
         false,
       );
+    }
+  });
+
+  it("accepts OKX top-level resource URL binding", () => {
+    const parsed = parsePaymentRequired({}, JSON.stringify(okxTopLevelResourceChallenge));
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(hasResourceBinding(parsed.value, "https://api.example.com/paid", "POST")).toBe(true);
+      expect(hasResourceBinding(parsed.value, "https://api.example.com/other", "POST")).toBe(false);
     }
   });
 });

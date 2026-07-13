@@ -50,6 +50,7 @@ describe("createApp", () => {
 
       expect(response.status).toBe(405);
       expect(response.headers.get("allow")).toBe("POST");
+      expect(response.headers.get("cache-control")).toBe("no-store");
       expect(body).toEqual({
         error: "method_not_allowed",
         message: "Use POST /api/v1/scan to run a latch402 scan.",

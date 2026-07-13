@@ -122,6 +122,10 @@ export function createApp(): Express {
     "/api/v1/scan",
     createRateLimiter({ windowMs: config.rateLimitWindowMs, max: config.rateLimitMax }),
   );
+  app.use("/api/v1/scan", (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
 
   app.get("/api/v1/scan", (_req, res) => {
     res.set("Allow", "POST").status(405).json({

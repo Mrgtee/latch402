@@ -5,7 +5,9 @@ export type PiiHit = {
 };
 
 const piiKeyPattern =
-  /(email|phone|mobile|name|firstName|lastName|address|street|city|postal|zipcode|passport|ssn|dob|birth)/i;
+  /(email|phone|mobile|firstName|lastName|fullName|givenName|familyName|address|street|city|postal|zipcode|passport|ssn|dob|birth)/i;
+const personalNameContextPattern =
+  /(user|customer|payer|buyer|recipient|person|profile|contact|owner|client)/i;
 const emailPattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const phonePattern = /(?:\+?\d[\d .()-]{7,}\d)/;
 
@@ -13,6 +15,11 @@ function preview(value: unknown): string {
   const text = typeof value === "string" ? value : JSON.stringify(value);
   if (!text) return "";
   return text.length > 96 ? `${text.slice(0, 96)}...` : text;
+}
+
+function keyLooksLikePii(key: string, path: string): boolean {
+  if (piiKeyPattern.test(key)) return true;
+  return key.toLowerCase() === "name" && personalNameContextPattern.test(path);
 }
 
 function walk(value: unknown, path: string, hits: PiiHit[]): void {
@@ -24,7 +31,7 @@ function walk(value: unknown, path: string, hits: PiiHit[]): void {
   if (value && typeof value === "object") {
     for (const [key, nested] of Object.entries(value)) {
       const childPath = path ? `${path}.${key}` : key;
-      if (piiKeyPattern.test(key)) {
+      if (keyLooksLikePii(key, childPath)) {
         hits.push({ path: childPath, rule: "pii-like key", preview: preview(nested) });
       }
       walk(nested, childPath, hits);

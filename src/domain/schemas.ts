@@ -83,6 +83,17 @@ export type ScanReport = z.infer<typeof scanReportSchema>;
 
 const x402VersionSchema = z.union([z.literal(2), z.literal("2")]);
 
+const x402ResourceDescriptorSchema = z
+  .object({
+    url: z.string().optional(),
+    method: z.string().optional(),
+    description: z.string().optional(),
+    mimeType: z.string().optional(),
+  })
+  .passthrough();
+
+const x402ResourceSchema = z.union([z.string(), x402ResourceDescriptorSchema]);
+
 export const x402PaymentRequirementSchema = z
   .object({
     scheme: z.string().optional(),
@@ -91,7 +102,7 @@ export const x402PaymentRequirementSchema = z
     amount: z.union([z.string(), z.number()]).optional(),
     maxAmountRequired: z.union([z.string(), z.number()]).optional(),
     payTo: z.string().optional(),
-    resource: z.string().optional(),
+    resource: x402ResourceSchema.optional(),
     description: z.string().optional(),
     mimeType: z.string().optional(),
     maxTimeoutSeconds: z.number().optional(),
@@ -108,6 +119,7 @@ export const x402ChallengeSchema = z
     accepts: z.array(x402PaymentRequirementSchema).optional(),
     paymentRequirements: z.array(x402PaymentRequirementSchema).optional(),
     error: z.string().optional(),
+    resource: x402ResourceSchema.optional(),
   })
   .passthrough()
   .superRefine((value, ctx) => {

@@ -102,19 +102,44 @@ function canonicalUrl(value: string): string | undefined {
   }
 }
 
+type ResourceDescriptor = string | { url?: unknown; method?: unknown } | undefined;
+
+function resourceUrl(value: ResourceDescriptor): string | undefined {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && typeof value.url === "string") return value.url;
+  return undefined;
+}
+
+function resourceMethod(value: ResourceDescriptor): string | undefined {
+  if (value && typeof value === "object" && typeof value.method === "string") return value.method;
+  return undefined;
+}
+
+function methodMatches(requirementMethod: string | undefined, method: string): boolean {
+  return !requirementMethod || requirementMethod.toUpperCase() === method.toUpperCase();
+}
+
+function resourceValueMatchesTarget(
+  resourceValue: ResourceDescriptor,
+  targetUrl: string,
+  method: string,
+  fallbackMethod?: string,
+): boolean {
+  const resource = resourceUrl(resourceValue);
+  if (!resource) return false;
+
+  const target = canonicalUrl(targetUrl);
+  const canonicalResource = canonicalUrl(resource);
+  if (!target || !canonicalResource || target !== canonicalResource) return false;
+
+  return methodMatches(resourceMethod(resourceValue) ?? fallbackMethod, method);
+}
+
 export function resourceMatchesTarget(
   requirement: X402PaymentRequirement,
   targetUrl: string,
   method: string,
 ): boolean {
-  if (!requirement.resource) return false;
-
-  const target = canonicalUrl(targetUrl);
-  const resource = canonicalUrl(requirement.resource);
-  if (!target || !resource || target !== resource) {
-    return false;
-  }
-
   const requirementMethod =
     typeof requirement.extra?.method === "string"
       ? requirement.extra.method
@@ -122,7 +147,24 @@ export function resourceMatchesTarget(
         ? requirement["method"]
         : undefined;
 
-  return !requirementMethod || requirementMethod.toUpperCase() === method.toUpperCase();
+  return resourceValueMatchesTarget(requirement.resource, targetUrl, method, requirementMethod);
+}
+
+function challengeResourceMatchesTarget(
+  challenge: X402Challenge,
+  targetUrl: string,
+  method: string,
+): boolean {
+  const challengeMethod =
+    typeof challenge["method"] === "string"
+      ? challenge["method"]
+      : typeof challenge["extra"] === "object" &&
+          challenge["extra"] !== null &&
+          typeof (challenge["extra"] as Record<string, unknown>).method === "string"
+        ? ((challenge["extra"] as Record<string, unknown>).method as string)
+        : undefined;
+
+  return resourceValueMatchesTarget(challenge.resource, targetUrl, method, challengeMethod);
 }
 
 export function hasResourceBinding(
@@ -130,8 +172,11 @@ export function hasResourceBinding(
   targetUrl: string,
   method: string,
 ): boolean {
-  return getChallengeRequirements(challenge).some((requirement) =>
-    resourceMatchesTarget(requirement, targetUrl, method),
+  return (
+    challengeResourceMatchesTarget(challenge, targetUrl, method) ||
+    getChallengeRequirements(challenge).some((requirement) =>
+      resourceMatchesTarget(requirement, targetUrl, method),
+    )
   );
 }
 
