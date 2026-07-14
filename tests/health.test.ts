@@ -69,7 +69,8 @@ describe("createApp", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("text/html");
-      expect(html).toContain("x402 endpoint preflight");
+      expect(html).toContain("x402 challenge probe");
+      expect(html).toContain("/assets/latch402-logo.png");
     });
   });
 });

@@ -5,26 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="latch402 paid x402 red-team scanner for OKX.AI A2MCP services"
+      content="latch402 scans live x402 paid endpoints for OKX/X Layer readiness, resource binding, replay, cache, metadata, and settlement risks."
     />
-    <title>latch402 | x402 Red-Team Scanner</title>
+    <meta property="og:title" content="latch402 | x402 readiness scanner" />
+    <meta
+      property="og:description"
+      content="Evidence-backed payment-flow security checks for builders listing x402 ASPs on OKX.AI."
+    />
+    <meta property="og:image" content="/assets/latch402-logo.png" />
+    <title>latch402 | x402 readiness scanner</title>
+    <link rel="icon" type="image/png" href="/assets/latch402-logo.png" />
     <link rel="stylesheet" href="/styles.css" />
     <script defer src="/app.js"></script>
   </head>
   <body>
+    <a class="skip-link" href="#scan-form">Skip to scanner</a>
+    <div class="grain" aria-hidden="true"></div>
     <div class="shell">
       <header class="topbar">
         <a class="brand" href="/" aria-label="latch402 home">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" role="img">
-              <path d="M8 14.5V10a8 8 0 0 1 16 0v4.5" />
-              <path d="M6.5 14.5h19v12h-19z" />
-              <path d="M16 18.5v4" />
-            </svg>
+          <span class="brand-mark">
+            <img src="/assets/latch402-logo.png" alt="latch402 logo" />
           </span>
-          <span>
+          <span class="brand-copy">
             <strong>latch402</strong>
-            <small>x402 red-team scanner</small>
+            <small>x402 red-team console</small>
           </span>
         </a>
         <nav class="nav-actions" aria-label="Primary links">
@@ -34,6 +39,25 @@
       </header>
 
       <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              OKX.AI A2MCP &middot; X Layer mainnet &middot; paid endpoint audit
+            </p>
+            <h1 id="hero-title">Payment-flow red team for x402 endpoints.</h1>
+            <p class="hero-text">
+              Probe a live paid route, decode the returned payment requirement, and collect the
+              evidence a reviewer or protocol engineer actually needs.
+            </p>
+          </div>
+          <aside class="hero-terminal" aria-label="Live service terms">
+            <div class="terminal-row"><span>method</span><strong>POST /api/v1/scan</strong></div>
+            <div class="terminal-row"><span>price</span><strong>0.05 USDt0</strong></div>
+            <div class="terminal-row"><span>network</span><strong>eip155:196</strong></div>
+            <div class="terminal-row"><span>mode</span><strong>passive first</strong></div>
+          </aside>
+        </section>
+
         <section class="status-strip" aria-label="Service summary">
           <div>
             <span class="label">Paid endpoint</span>
@@ -61,8 +85,9 @@
           <form class="panel scan-panel" id="scan-form">
             <div class="panel-heading">
               <div>
-                <h1>x402 endpoint preflight</h1>
-                <p>Build a real latch402 request and inspect the returned payment challenge.</p>
+                <span class="panel-kicker">Preflight request</span>
+                <h2>x402 challenge probe</h2>
+                <p>Build a real latch402 request and inspect the payment gate before funds move.</p>
               </div>
               <button
                 class="icon-button"
@@ -75,7 +100,7 @@
               </button>
             </div>
 
-            <label class="field">
+            <label class="field field-wide">
               <span>Target URL</span>
               <input
                 id="target-url"
@@ -137,6 +162,7 @@
           <section class="panel result-panel" aria-label="Payment challenge result">
             <div class="panel-heading compact">
               <div>
+                <span class="panel-kicker">Captured response</span>
                 <h2>Payment challenge</h2>
                 <p id="challenge-status">No preflight run yet.</p>
               </div>
@@ -162,6 +188,7 @@
           <section class="panel report-panel" aria-label="Report fetcher">
             <div class="panel-heading compact">
               <div>
+                <span class="panel-kicker">Stored evidence</span>
                 <h2>Report lookup</h2>
                 <p>Fetch a completed scan by run id and report token.</p>
               </div>
@@ -183,8 +210,9 @@
           <section class="panel details-panel" aria-label="Readiness details">
             <div class="panel-heading compact">
               <div>
+                <span class="panel-kicker">Live checks</span>
                 <h2>Review checklist</h2>
-                <p>Live proof points for OKX.AI review.</p>
+                <p>Proof points for OKX.AI and your own pre-listing review.</p>
               </div>
             </div>
             <ul class="check-list" id="check-list">
