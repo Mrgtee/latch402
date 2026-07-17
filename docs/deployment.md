@@ -28,7 +28,7 @@ NODE_ENV=production LATCH402_PAYMENT_MODE=okx node dist/src/server.js
 
 Production defaults:
 
-- Paid route: `POST /api/v1/scan`
+- Paid routes: `GET /api/v1/scan` and `POST /api/v1/scan`
 - Price: `$0.05`
 - Network: `eip155:196`
 - Seller wallet: `PAY_TO_ADDRESS`
@@ -55,9 +55,11 @@ OpenAPI:
 curl -i https://YOUR_DOMAIN/openapi.json
 ```
 
-Unpaid paid-endpoint check. In production this must return HTTP 402 with `PAYMENT-REQUIRED` or x402 body metadata:
+Unpaid paid-endpoint checks. In production both commands must return HTTP 402 with `PAYMENT-REQUIRED`:
 
 ```bash
+curl -i https://YOUR_DOMAIN/api/v1/scan
+
 curl -i -X POST https://YOUR_DOMAIN/api/v1/scan   -H 'content-type: application/json'   -d '{"targetUrl":"https://TARGET_DOMAIN/paid","mode":"passive","authorizationConfirmed":true}'
 ```
 

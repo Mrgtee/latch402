@@ -52,6 +52,30 @@ export function buildOkxFacilitatorOptions(config: AppConfig): OkxFacilitatorOpt
   return options;
 }
 
+export function buildOkxScanRoutes(
+  config: AppConfig,
+  payToAddress: string,
+  price: string,
+): RoutesConfig {
+  const scanRoute = {
+    accepts: [
+      {
+        scheme: "exact" as const,
+        network: config.x402Network,
+        payTo: payToAddress,
+        price,
+      },
+    ],
+    description: "latch402 evidence-backed x402 payment-flow security scan",
+    mimeType: "application/json",
+  };
+
+  return {
+    "GET /api/v1/scan": scanRoute,
+    "POST /api/v1/scan": scanRoute,
+  } satisfies RoutesConfig;
+}
+
 export function createOkxPaymentGate(config: AppConfig): RequestHandler | undefined {
   if (!config.okxPaymentEnabled) return undefined;
 
@@ -71,18 +95,7 @@ export function createOkxPaymentGate(config: AppConfig): RequestHandler | undefi
     new ExactEvmScheme(),
   );
 
-  const routes = {
-    "POST /api/v1/scan": {
-      accepts: {
-        scheme: "exact",
-        network: config.x402Network,
-        payTo: payToAddress,
-        price: check.price,
-      },
-      description: "latch402 evidence-backed x402 payment-flow security scan",
-      mimeType: "application/json",
-    },
-  } satisfies RoutesConfig;
+  const routes = buildOkxScanRoutes(config, payToAddress, check.price);
 
   return paymentMiddleware(routes, resourceServer, undefined, undefined, true);
 }

@@ -41,19 +41,20 @@ describe("createApp", () => {
     expect(app.get("trust proxy")).toBe(1);
   });
 
-  it("returns a clear method response for GET scan endpoint", async () => {
+  it("describes the paid scan service for GET scan endpoint when payment is disabled", async () => {
     const app = createApp();
 
     await withServer(app, async (baseUrl) => {
       const response = await fetch(`${baseUrl}/api/v1/scan`);
       const body = await response.json();
 
-      expect(response.status).toBe(405);
-      expect(response.headers.get("allow")).toBe("POST");
+      expect(response.status).toBe(200);
       expect(response.headers.get("cache-control")).toBe("no-store");
-      expect(body).toEqual({
-        error: "method_not_allowed",
-        message: "Use POST /api/v1/scan to run a latch402 scan.",
+      expect(body).toMatchObject({
+        service: "latch402",
+        type: "okx-ai-a2mcp-x402",
+        status: "ready",
+        paidEndpoint: "POST /api/v1/scan",
         ui: "/",
         openapi: "/openapi.json",
       });

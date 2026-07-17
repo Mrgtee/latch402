@@ -23,7 +23,7 @@ const envSchema = z.object({
   SCAN_TIMEOUT_MS: z.coerce.number().int().positive().default(12000),
   SCAN_MAX_BODY_BYTES: z.coerce.number().int().positive().default(65536),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
   SCAN_ACTIVE_PAYMENTS_ENABLED: z.enum(["true", "false"]).default("false"),
   SCAN_SPEND_CAP_USD: z.coerce.number().nonnegative().default(0),
   EVM_PRIVATE_KEY: optionalString,

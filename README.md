@@ -10,7 +10,7 @@ Production ASP:
 
 - Base URL: `https://latch402-production.up.railway.app`
 - Web UI: `GET /`
-- Paid endpoint: `POST /api/v1/scan`
+- Paid endpoints: `GET /api/v1/scan` and `POST /api/v1/scan`
 - OpenAPI: `GET /openapi.json`
 - Price: `$0.05` per scan
 - Network: X Layer mainnet, `eip155:196`
@@ -30,9 +30,11 @@ x402 metadata, configured payment evidence, and optional X Layer receipt checks.
 
 ## Current Verification
 
-The production Railway deployment has been verified with an unpaid request:
+The production Railway deployment should be verified with both unpaid probe shapes:
 
 ```bash
+curl -i https://latch402-production.up.railway.app/api/v1/scan
+
 curl -i -X POST https://latch402-production.up.railway.app/api/v1/scan \
   -H "content-type: application/json" \
   --data-binary '{"targetUrl":"https://example.com","mode":"passive","authorizationConfirmed":true}'
@@ -84,8 +86,7 @@ curl -i https://latch402-production.up.railway.app/openapi.json
 
 ### Run A Scan
 
-`POST /api/v1/scan` is paid in production. An unpaid request returns `402 Payment Required`.
-After a valid x402 payment, the same request is replayed and returns a `ScanReport`.
+`GET /api/v1/scan` and `POST /api/v1/scan` are paid in production. Unpaid requests return `402 Payment Required` with `PAYMENT-REQUIRED`. After a valid x402 payment, `GET` returns a service descriptor and `POST` replays the scan request to return a `ScanReport`.
 
 Request:
 
@@ -184,7 +185,7 @@ X_LAYER_RPC_URL=https://rpc.xlayer.tech
 - `.env` is ignored; secrets are never committed.
 - Payment, signature, response, API key, passphrase, and private key fields are redacted from logs.
 - Request timeouts and response-size limits are enforced.
-- Rate limiting is enabled on `POST /api/v1/scan`.
+- Rate limiting is enabled on `GET /api/v1/scan` and `POST /api/v1/scan`.
 - Express trusts Railway's first proxy so x402 resource URLs bind to public HTTPS.
 
 ## Environment
@@ -264,7 +265,7 @@ docker run --env-file .env -p 4020:4020 latch402
 - Name: `latch402`
 - Category: Software Utility
 - Description: Paid x402 red-team scanner for finding payment-flow bugs before OKX.AI listing review.
-- Endpoint: `POST https://latch402-production.up.railway.app/api/v1/scan`
+- Endpoint: `https://latch402-production.up.railway.app/api/v1/scan`
 - OpenAPI: `GET https://latch402-production.up.railway.app/openapi.json`
 - Price: `$0.05`
 - Network: `eip155:196`

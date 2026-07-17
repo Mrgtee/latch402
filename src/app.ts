@@ -54,6 +54,13 @@ export function createApp(): Express {
         "/health": { get: { responses: { "200": { description: "Healthy" } } } },
         "/openapi.json": { get: { responses: { "200": { description: "OpenAPI schema" } } } },
         "/api/v1/scan": {
+          get: {
+            summary: "Describe the paid latch402 scan service",
+            responses: {
+              "200": { description: "Service descriptor after paid replay" },
+              "402": { description: "Payment required in production" },
+            },
+          },
           post: {
             summary: "Run a paid x402 security scan",
             requestBody: {
@@ -127,19 +134,28 @@ export function createApp(): Express {
     next();
   });
 
-  app.get("/api/v1/scan", (_req, res) => {
-    res.set("Allow", "POST").status(405).json({
-      error: "method_not_allowed",
-      message: "Use POST /api/v1/scan to run a latch402 scan.",
-      ui: "/",
-      openapi: "/openapi.json",
-    });
-  });
-
   const okxPaymentGate = createOkxPaymentGate(config);
   if (okxPaymentGate) {
     app.use(okxPaymentGate);
   }
+
+  app.get("/api/v1/scan", (_req, res) => {
+    res.json({
+      service: "latch402",
+      type: "okx-ai-a2mcp-x402",
+      status: "ready",
+      paidEndpoint: "POST /api/v1/scan",
+      priceUsd: config.x402PriceUsd,
+      network: config.x402Network,
+      input: {
+        required: ["targetUrl", "mode", "authorizationConfirmed"],
+        modes: ["passive", "active"],
+        methods: ["GET", "POST"],
+      },
+      ui: "/",
+      openapi: "/openapi.json",
+    });
+  });
 
   app.post("/api/v1/scan", async (req, res, next) => {
     try {

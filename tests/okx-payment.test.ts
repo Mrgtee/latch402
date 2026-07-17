@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { type AppConfig } from "../src/config.js";
 import { OKX_X_LAYER_MAINNET, OKX_X_LAYER_TESTNET } from "../src/domain/constants.js";
-import { buildOkxFacilitatorOptions, validateOkxPaymentConfig } from "../src/payment/okx.js";
+import {
+  buildOkxFacilitatorOptions,
+  buildOkxScanRoutes,
+  validateOkxPaymentConfig,
+} from "../src/payment/okx.js";
 
 const baseConfig: AppConfig = {
   nodeEnv: "production",
@@ -16,7 +20,7 @@ const baseConfig: AppConfig = {
   scanTimeoutMs: 12000,
   scanMaxBodyBytes: 65536,
   rateLimitWindowMs: 60000,
-  rateLimitMax: 30,
+  rateLimitMax: 300,
   activePaymentsEnabled: false,
   scanSpendCapUsd: 0,
   evmPrivateKey: undefined,
@@ -51,6 +55,29 @@ describe("OKX payment config", () => {
     });
 
     expect(options.baseUrl).toBe("https://web3.okx.com");
+  });
+
+  it("builds SDK route config for unpaid OKX validation probes on GET and POST", () => {
+    const routes = buildOkxScanRoutes(
+      baseConfig,
+      "0x1111111111111111111111111111111111111111",
+      "$0.05",
+    );
+
+    expect(Object.keys(routes).sort()).toEqual(["GET /api/v1/scan", "POST /api/v1/scan"]);
+    for (const route of Object.values(routes)) {
+      expect(Array.isArray(route.accepts)).toBe(true);
+      expect(route.accepts[0]).toMatchObject({
+        scheme: "exact",
+        network: "eip155:196",
+        payTo: "0x1111111111111111111111111111111111111111",
+        price: "$0.05",
+      });
+      expect(route).toMatchObject({
+        description: "latch402 evidence-backed x402 payment-flow security scan",
+        mimeType: "application/json",
+      });
+    }
   });
 
   it("fails fast when required OKX payment config is missing", () => {

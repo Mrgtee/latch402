@@ -7,15 +7,16 @@ Use this checklist before submitting latch402 to OKX.AI and the Build X final fo
 - [ ] Public HTTPS deployment is reachable.
 - [ ] `GET /health` returns `200` with service metadata.
 - [ ] `GET /openapi.json` returns an OpenAPI 3.1 document.
+- [ ] `GET /api/v1/scan` is live as a paid service descriptor for marketplace probes.
 - [ ] `POST /api/v1/scan` is live and performs real HTTP probing.
 - [ ] Passive scans use live network evidence and do not use mocks.
 - [ ] Active scans run only with an explicit wallet, signer, network, and spend cap.
 
 ## Paid x402 Endpoint
 
-- [ ] `POST /api/v1/scan` is protected by the OKX x402 middleware in production.
+- [ ] `GET /api/v1/scan` and `POST /api/v1/scan` are protected by the OKX x402 middleware in production.
 - [ ] A request without payment returns HTTP `402 Payment Required`.
-- [ ] The 402 response includes `PAYMENT-REQUIRED` or a body containing x402 challenge metadata.
+- [ ] The 402 response includes `PAYMENT-REQUIRED`; the base64-decoded challenge has `x402Version: 2` and an `accepts` array.
 - [ ] A valid paid replay returns a real `ScanReport`.
 - [ ] The paid replay includes `PAYMENT-RESPONSE` when settlement metadata is available.
 - [ ] Production payment network is `eip155:196`.

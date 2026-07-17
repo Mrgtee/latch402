@@ -8,7 +8,7 @@
 - Service type: A2MCP, x402 pay-per-call endpoint.
 - Category: Software Utility.
 - Public app: `https://latch402-production.up.railway.app/`
-- Paid endpoint: `POST https://latch402-production.up.railway.app/api/v1/scan`
+- Paid endpoint: `https://latch402-production.up.railway.app/api/v1/scan` (`GET` and `POST` both return an unpaid x402 challenge; `POST` runs the scan after payment)
 - OpenAPI schema: `GET https://latch402-production.up.railway.app/openapi.json`
 - Health check: `GET https://latch402-production.up.railway.app/health`
 - Price: `$0.05` per scan.
@@ -101,9 +101,11 @@ Example request payload:
 
 ## Review Self-Check
 
-Run this before submitting the listing:
+Run both commands before resubmitting the listing:
 
 ```bash
+curl -i https://latch402-production.up.railway.app/api/v1/scan
+
 curl -i -X POST https://latch402-production.up.railway.app/api/v1/scan \
   -H "content-type: application/json" \
   --data-binary '{"targetUrl":"https://example.com","method":"GET","mode":"passive","expectedNetwork":"eip155:196","authorizationConfirmed":true}'
